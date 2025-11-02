@@ -1,0 +1,13 @@
+# Ignore Jenkins caches and temp files
+jenkins_home/caches/
+jenkins_home/fingerprints/
+jenkins_home/tmp/
+jenkins_home/logs/
+jenkins_home/workspace/
+
+# Optional: ignore build history if not needed
+jenkins_home/jobs/*/builds/
+
+# Ignore other junk
+*.log
+*.tmp
