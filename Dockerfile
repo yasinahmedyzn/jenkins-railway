@@ -1,42 +1,47 @@
-# ✅ Use the official Jenkins LTS image as base
+# -----------------------------
+# 1️⃣ Base Image
+# -----------------------------
 FROM jenkins/jenkins:lts
 
-# ------------------------------------------------------------
-# STEP 1: Switch to root to install dependencies and set up
-# ------------------------------------------------------------
+# -----------------------------
+# 2️⃣ Switch to root to install dependencies and fix permissions
+# -----------------------------
 USER root
 
-# Install useful tools (optional)
+# Install optional tools
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     vim \
     && rm -rf /var/lib/apt/lists/*
 
-# ------------------------------------------------------------
-# STEP 2: Copy your OLD Jenkins data (jobs, plugins, users)
-# ------------------------------------------------------------
-# Make sure you have a folder named 'jenkins_home_local' beside this Dockerfile
-# It should contain your old Jenkins data (jobs/, users/, config.xml, secrets/, etc.)
+# Create Jenkins home folder and fix ownership
+RUN mkdir -p /var/jenkins_home && chown -R 1000:1000 /var/jenkins_home
+
+# -----------------------------
+# 3️⃣ Copy your old Jenkins home
+# -----------------------------
+# Make sure 'jenkins_home_local' exists beside Dockerfile
 COPY --chown=1000:1000 jenkins_home_local /var/jenkins_home
 
-# ------------------------------------------------------------
-# STEP 3: Switch back to Jenkins user
-# ------------------------------------------------------------
+# -----------------------------
+# 4️⃣ Switch back to Jenkins user
+# -----------------------------
 USER jenkins
 
-# Disable setup wizard — Jenkins will boot directly into your old config
-ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+# -----------------------------
+# 5️⃣ Memory optimization and setup wizard skip
+# -----------------------------
+ENV JAVA_OPTS="-Xmx384m -Djenkins.install.runSetupWizard=false"
 
-# ------------------------------------------------------------
-# STEP 4: Railway port configuration
-# ------------------------------------------------------------
-# Railway assigns a random dynamic port
+# -----------------------------
+# 6️⃣ Railway dynamic port binding
+# -----------------------------
 ARG PORT=8080
 ENV PORT=${PORT}
 EXPOSE ${PORT}
 
-# ------------------------------------------------------------
-# STEP 5: Start Jenkins using the dynamic port
-# ------------------------------------------------------------
-CMD ["bash", "-c", "java -jar /usr/share/jenkins/jenkins.war --httpPort=$PORT --prefix=/ --enable-future-java --httpListenAddress=0.0.0.0"]
+# -----------------------------
+# 7️⃣ Start Jenkins listening on all interfaces and Railway port
+# -----------------------------
+CMD ["bash", "-c", "java -jar /usr/share/jenkins/jenkins.war --httpPort=$PORT --httpListenAddress=0.0.0.0 --prefix=/"]
