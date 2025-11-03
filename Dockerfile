@@ -7,4 +7,7 @@ RUN apt-get update && apt-get install -y git curl vim && rm -rf /var/lib/apt/lis
 COPY --chown=1000:1000 jenkins_home /var/jenkins_home
 
 USER jenkins
-EXPOSE 8080
+ENV JENKINS_PORT=${PORT}
+EXPOSE ${PORT}
+
+CMD ["bash", "-c", "java -jar /usr/share/jenkins/jenkins.war --httpPort=$PORT"]
