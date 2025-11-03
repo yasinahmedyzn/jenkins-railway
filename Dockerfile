@@ -39,4 +39,4 @@ EXPOSE ${PORT}
 # ------------------------------------------------------------
 # STEP 5: Start Jenkins using the dynamic port
 # ------------------------------------------------------------
-CMD ["bash", "-c", "java -jar /usr/share/jenkins/jenkins.war --httpPort=$PORT"]
+CMD ["bash", "-c", "java -jar /usr/share/jenkins/jenkins.war --httpPort=$PORT --prefix=/ --enable-future-java --httpListenAddress=0.0.0.0"]
