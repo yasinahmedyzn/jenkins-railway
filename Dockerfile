@@ -1,7 +1,9 @@
-# Use the official Jenkins LTS image as base
+# ✅ Use the official Jenkins LTS image as base
 FROM jenkins/jenkins:lts
 
-# Switch to root to install dependencies and fix permissions
+# ------------------------------------------------------------
+# STEP 1: Switch to root to install dependencies and set up
+# ------------------------------------------------------------
 USER root
 
 # Install useful tools (optional)
@@ -11,21 +13,30 @@ RUN apt-get update && apt-get install -y \
     vim \
     && rm -rf /var/lib/apt/lists/*
 
-# Create Jenkins home and fix permissions
-RUN mkdir -p /var/jenkins_home && chown -R 1000:1000 /var/jenkins_home
+# ------------------------------------------------------------
+# STEP 2: Copy your OLD Jenkins data (jobs, plugins, users)
+# ------------------------------------------------------------
+# Make sure you have a folder named 'jenkins_home_local' beside this Dockerfile
+# It should contain your old Jenkins data (jobs/, users/, config.xml, secrets/, etc.)
+COPY --chown=1000:1000 jenkins_home_local /var/jenkins_home
 
-# Switch back to Jenkins user
+# ------------------------------------------------------------
+# STEP 3: Switch back to Jenkins user
+# ------------------------------------------------------------
 USER jenkins
 
-# Disable the setup wizard (optional but speeds up boot)
+# Disable setup wizard — Jenkins will boot directly into your old config
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 
-# Railway sets a dynamic $PORT — make Jenkins bind to it
+# ------------------------------------------------------------
+# STEP 4: Railway port configuration
+# ------------------------------------------------------------
+# Railway assigns a random dynamic port
 ARG PORT=8080
 ENV PORT=${PORT}
-
-# Expose the port Jenkins will listen on
 EXPOSE ${PORT}
 
-# Start Jenkins bound to Railway's dynamic port
+# ------------------------------------------------------------
+# STEP 5: Start Jenkins using the dynamic port
+# ------------------------------------------------------------
 CMD ["bash", "-c", "java -jar /usr/share/jenkins/jenkins.war --httpPort=$PORT"]
